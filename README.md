@@ -105,3 +105,4 @@ Participants are **STRICTLY NOT ALLOWED** to obtain prices from the internet, ex
 - Consider ensemble methods combining different model types
 - Pay attention to outliers and data preprocessing
 # amazon-ml-challenge-2025
+# amazon-ml-challenge-2025
