@@ -1,0 +1,21 @@
+# Large ML files
+*.npy
+*.parquet
+
+# Dataset
+dataset/*.csv
+
+# Checkpoints
+*.pt
+*.pth
+*.h5
+
+# Cache / System files
+__pycache__/
+.ipynb_checkpoints/
+*.log
+.DS_Store
+
+# Virtual environments
+.env/
+venv/
