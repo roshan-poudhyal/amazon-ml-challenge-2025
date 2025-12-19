@@ -1,108 +1,183 @@
-# ML Challenge 2025 Problem Statement
+**# 🚀 Amazon ML Challenge 2025 — Smart Product Pricing
 
-## Smart Product Pricing Challenge
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)  
+[![Platform](https://img.shields.io/badge/Platform-Windows%20|%20macOS%20|%20Linux-lightgrey)]()  
+![Status](https://img.shields.io/badge/Status-Completed-green.svg)  
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-In e-commerce, determining the optimal price point for products is crucial for marketplace success and customer satisfaction. Your challenge is to develop an ML solution that analyzes product details and predict the price of the product. The relationship between product attributes and pricing is complex - with factors like brand, specifications, product quantity directly influence pricing. Your task is to build a model that can analyze these product details holistically and suggest an optimal price.
+---
 
-### Data Description:
+## 📖 Table of Contents
+- [Project Description](#-project-description)  
+- [Key Features](#-key-features)  
+- [Repository Structure](#-repository-structure)  
+- [Environment Setup](#-environment-setup)  
+- [Data Preparation](#-data-preparation)  
+- [Quick Start](#-quick-start)  
+- [Approach Overview](#-approach-overview)  
+- [Evaluation](#-evaluation)  
+- [Artifacts & Outputs](#-artifacts--outputs)  
+- [Reproducibility](#-reproducibility)  
+- [Troubleshooting](#-troubleshooting)  
+- [Acknowledgements](#-acknowledgements)  
+- [License](#-license)  
 
-The dataset consists of the following columns:
+---
 
-1. **sample_id:** A unique identifier for the input sample
-2. **catalog_content:** Text field containing title, product description and an Item Pack Quantity(IPQ) concatenated.
-3. **image_link:** Public URL where the product image is available for download. 
-   Example link - https://m.media-amazon.com/images/I/71XfHPR36-L.jpg
-   To download images use `download_images` function from `src/utils.py`. See sample code in `src/test.ipynb`.
-4. **price:** Price of the product (Target variable - only available in training data)
+## 📖 Project Description
+**Smart Product Pricing** is a multimodal machine learning solution for the **Amazon ML Challenge 2025**. It predicts product prices by integrating:
 
-### Dataset Details:
+- **Text**: Product catalog content  
+- **Images**: Product images  
+- **Numerical Features**: Engineered metrics like value/unit, content statistics, brand heuristics  
 
-- **Training Dataset:** 75k products with complete product details and prices
-- **Test Set:** 75k products for final evaluation
+The system combines **Fusion MLP**, **LightGBM**, and **XGBoost** base models with a **Ridge meta-learner** to produce final predictions optimized for **SMAPE**.
 
-### Output Format:
+---
 
-The output file should be a CSV with 2 columns:
+## 🌟 Key Features
 
-1. **sample_id:** The unique identifier of the data sample. Note the ID should match the test record sample_id.
-2. **price:** A float value representing the predicted price of the product.
+### ⚡ Core Functionality
+| Feature | Implementation |
+|---------|----------------|
+| **Multimodal Fusion** | CLIP text & image embeddings + engineered numeric features |
+| **Base Models** | PyTorch Fusion MLP, LightGBM, XGBoost |
+| **Stacking** | Ridge regression meta-learner using OOF predictions |
+| **Optimized Training** | PCA, TF-IDF SVD, caching, and Optuna tuning |
+| **Hardware Support** | CPU, macOS MPS, CUDA GPUs |
 
-Note: Make sure to output a prediction for all sample IDs. If you have less/more number of output samples in the output file as compared to test.csv, your output won't be evaluated.
+### 📊 Outputs
+- Submission-ready `test_out.csv`  
+- Model artifacts: PCA objects, scalers, TF-IDF SVD, OOF logs  
 
-### File Descriptions:
+---
 
-*Source files*
+## 📂 Repository Structure
+.
+├── preprocess.py # Feature engineering & train/test preprocessing
+├── embed_text.py # CLIP text embeddings
+├── embed_images.py # CLIP image embeddings with caching
+├── train.py # Base models + stacking + submission
+├── src/utils.py # Utilities (image download, caching)
+├── dataset/ # Place train.csv and test.csv here
+├── artifacts/ # Saved PCA, scalers, OOF logs, meta-model inputs
+└── README.md
 
-1. **src/utils.py:** Contains helper functions for downloading images from the image_link. You may need to retry a few times to download all images due to possible throttling issues.
-2. **sample_code.py:** Sample dummy code that can generate an output file in the given format. Usage of this file is optional.
+---
 
-*Dataset files*
+## 🛠️ Environment Setup
+```bash
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install --upgrade pip
 
-1. **dataset/train.csv:** Training file with labels (`price`).
-2. **dataset/test.csv:** Test file without output labels (`price`). Generate predictions using your model/solution on this file's data and format the output file to match sample_test_out.csv
-3. **dataset/sample_test.csv:** Sample test input file.
-4. **dataset/sample_test_out.csv:** Sample outputs for sample_test.csv. The output for test.csv must be formatted in the exact same way. Note: The predictions in the file might not be correct
+# Install core dependencies
+pip install pandas numpy scikit-learn lightgbm xgboost optuna tqdm pillow requests joblib pyarrow
 
-### Constraints:
+# Install PyTorch
+pip install torch torchvision torchaudio  # CPU/MPS compatible
 
-1. You will be provided with a sample output file. Format your output to match the sample output file exactly. 
+# Install OpenAI CLIP
+pip install git+https://github.com/openai/CLIP.git
 
-2. Predicted prices must be positive float values.
-
-3. Final model should be a MIT/Apache 2.0 License model and up to 8 Billion parameters.
-
-### Evaluation Criteria:
-
-Submissions are evaluated using **Symmetric Mean Absolute Percentage Error (SMAPE)**: A statistical measure that expresses the relative difference between predicted and actual values as a percentage, while treating positive and negative errors equally.
-
-**Formula:**
+macOS Apple Silicon automatically uses MPS; CUDA GPUs supported.
 ```
-SMAPE = (1/n) * Σ |predicted_price - actual_price| / ((|actual_price| + |predicted_price|)/2)
-```
 
-**Example:** If actual price = $100 and predicted price = $120  
-SMAPE = |100-120| / ((|100| + |120|)/2) * 100% = 18.18%
+📦 Data Preparation
 
-**Note:** SMAPE is bounded between 0% and 200%. Lower values indicate better performance.
+Place files in dataset/train.csv and dataset/test.csv
 
-### Leaderboard Information:
+Required columns: sample_id, catalog_content, image_link, price (train only)
 
-- **Public Leaderboard:** During the challenge, rankings will be based on 25K samples from the test set to provide real-time feedback on your model's performance.
-- **Final Rankings:** The final decision will be based on performance on the complete 75K test set along with provided documentation of the proposed approach by the teams.
+⚡ Quick Start
+# Preprocess train/test into combined Parquet
+python preprocess.py --train dataset/train.csv --test dataset/test.csv --out preprocessed.parquet
 
-### Submission Requirements:
+# Generate CLIP text embeddings
+python embed_text.py
 
-1. Upload a `test_out.csv` file in the Portal with the exact same formatting as `sample_test_out.csv`
+# Generate CLIP image embeddings (with caching)
+python embed_images.py
 
-2. All participating teams must also provide a 1-page document describing:
-   - Methodology used
-   - Model architecture/algorithms selected
-   - Feature engineering techniques applied
-   - Any other relevant information about the approach
-   Note: A sample template for this documentation is provided in Documentation_template.md
+# Train models, stack predictions, produce submission
+python train.py --trials 20 --mlp_epochs 12 --pca_text 128 --pca_img 128
+Outputs:
 
-### **Academic Integrity and Fair Play:**
+test_out.csv — submission file
 
-**⚠️ STRICTLY PROHIBITED: External Price Lookup**
+Model artifacts — PCA/scalers, TF-IDF SVD, OOF logs, meta-model inputs
 
-Participants are **STRICTLY NOT ALLOWED** to obtain prices from the internet, external databases, or any sources outside the provided dataset. This includes but is not limited to:
-- Web scraping product prices from e-commerce websites
-- Using APIs to fetch current market prices
-- Manual price lookup from online sources
-- Using any external pricing databases or services
+📝 Approach Overview
+Text Features
 
-**Enforcement:**
-- All submitted approaches, methodologies, and code pipelines will be thoroughly reviewed and verified
-- Any evidence of external price lookup or data augmentation from internet sources will result in **immediate disqualification**
+CLIP ViT-B/32 embeddings → normalized → PCA
 
-**Fair Play:** This challenge is designed to test your machine learning and data science skills using only the provided training data. External price lookup defeats the purpose of the challenge.
+TF-IDF bigram features → TruncatedSVD for tree models
 
+Image Features
 
-### Tips for Success:
+CLIP ViT-B/32 embeddings → normalized → PCA
 
-- Consider both textual features (catalog_content) and visual features (product images)
-- Explore feature engineering techniques for text and image data
-- Consider ensemble methods combining different model types
-- Pay attention to outliers and data preprocessing
-# amazon-ml-challenge-2025
-# amazon-ml-challenge-2025
+Numerical Features
+
+Value/unit normalization, content length, word counts, ratios/log transforms
+
+Brand heuristics & target encoding
+
+Base Learners
+
+Fusion MLP over [text_pca, image_pca, numeric] blocks
+
+LightGBM and XGBoost with Optuna hyperparameter tuning
+
+Stacking
+
+Concatenate OOF predictions → Ridge regression meta-model → final test predictions → clip positive → test_out.csv
+
+📊 Evaluation
+
+Metric: SMAPE (Symmetric Mean Absolute Percentage Error)
+
+Prints per-fold OOF SMAPE for MLP, LightGBM, and XGBoost
+## 📦 Artifacts & Outputs
+
+| Artifact            | Description                           |
+|--------------------|---------------------------------------|
+| `pca_text.pkl`      | PCA object for text embeddings        |
+| `pca_img.pkl`       | PCA object for image embeddings       |
+| `scaler_*.pkl`      | Normalization scalers                 |
+| `tfidf_vectorizer.pkl` | TF-IDF vectorizer                  |
+| `tfidf_svd.pkl`     | TF-IDF SVD reducer                    |
+| `imputer.pkl`       | Missing value imputer                 |
+| `oof_*.pkl`         | Out-of-fold predictions               |
+| `test_preds_*.pkl`  | Base model test predictions           |
+
+## 🔁 Reproducibility
+
+- **Seeds**: `RANDOM_SEED=42` for NumPy & PyTorch  
+- **Optuna**: Fixed TPE seed; minor nondeterminism may remain  
+- **Hardware**: CPU/MPS/CUDA differences may slightly affect results  
+
+---
+
+## 🛠️ Troubleshooting
+
+- **CLIP install issues**: Ensure `git` is available  
+- **Image download throttling**: `embed_images.py` caches images; use `src/utils.py` to pre-download  
+- **MPS memory errors**: Reduce `BATCH_SIZE` in `embed_images.py`  
+
+---
+
+## 🙏 Acknowledgements
+
+- Amazon ML Challenge 2025 organizers  
+- OpenAI CLIP for text & image embeddings  
+- LightGBM & XGBoost libraries  
+- Optuna for hyperparameter optimization  
+
+---
+
+## 📄 License
+
+Project license is currently unspecified. Please define before public distribution.**
